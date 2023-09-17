@@ -35,7 +35,7 @@ variable "key_name" {
 
 variable "instance_type" {
   description = "The instance type for the EC2 instance."
-  default     = "t2.micro"
+  default     = "t3.micro"
 }
 
 variable "ami_owner" {

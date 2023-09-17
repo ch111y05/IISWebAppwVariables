@@ -1,47 +1,47 @@
 # Creating a Virtual Private Cloud (VPC) named "hashi_vpc"
 resource "aws_vpc" "hashi_vpc" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  cidr_block           = var.vpc_cidr # Change to your desired VPC CIDR block
+  enable_dns_hostnames = true         # You can disable DNS hostnames if not needed
+  enable_dns_support   = true         # You can disable DNS support if not needed
 
   tags = {
-    Name = "dev"
+    Name = "dev" # Customize the VPC name/tag
   }
 }
 
 # Creating a private subnet within the VPC
 resource "aws_subnet" "hashi_private_subnet" {
   vpc_id                  = aws_vpc.hashi_vpc.id
-  cidr_block              = var.private_subnet_cidr
-  map_public_ip_on_launch = false
-  availability_zone       = var.availability_zone_a
+  cidr_block              = var.private_subnet_cidr # Change to your desired private subnet CIDR block
+  map_public_ip_on_launch = false                   # Set to true if you want instances in this subnet to have public IPs
+  availability_zone       = var.availability_zone_a # Change to your desired availability zone
 
   tags = {
-    Name = "dev-private"
+    Name = "dev-private" # Customize the subnet name/tag
   }
 }
 
 # Creating a public subnet within the VPC
 resource "aws_subnet" "hashi_public_subnet" {
   vpc_id                  = aws_vpc.hashi_vpc.id
-  cidr_block              = var.public_subnet_cidr
-  map_public_ip_on_launch = true
-  availability_zone       = var.availability_zone_a
+  cidr_block              = var.public_subnet_cidr  # Change to your desired public subnet CIDR block
+  map_public_ip_on_launch = true                    # Set to false if you don't want instances in this subnet to have public IPs
+  availability_zone       = var.availability_zone_a # Change to your desired availability zone
 
   tags = {
-    Name = "dev-public"
+    Name = "dev-public" # Customize the subnet name/tag
   }
 }
 
 # Creating another public subnet in a different availability zone
 resource "aws_subnet" "hashi_public_subnet_2" {
   vpc_id                  = aws_vpc.hashi_vpc.id
-  cidr_block              = var.public_subnet_2_cidr
-  map_public_ip_on_launch = true
-  availability_zone       = var.availability_zone_b
+  cidr_block              = var.public_subnet_2_cidr # Change to your desired public subnet CIDR block
+  map_public_ip_on_launch = true                     # Set to false if you don't want instances in this subnet to have public IPs
+  availability_zone       = var.availability_zone_b  # Change to your desired availability zone
 
   tags = {
-    Name = "dev-public-2"
+    Name = "dev-public-2" # Customize the subnet name/tag
   }
 }
 
@@ -62,7 +62,7 @@ resource "aws_internet_gateway" "hashi_internet_gateway" {
   vpc_id = aws_vpc.hashi_vpc.id
 
   tags = {
-    Name = "dev-igw"
+    Name = "dev-igw" # Customize the internet gateway name/tag
   }
 }
 
@@ -76,7 +76,7 @@ resource "aws_route_table" "hashi_public_rt" {
   }
 
   tags = {
-    Name = "dev_public_rt"
+    Name = "dev_public_rt" # Customize the route table name/tag
   }
 }
 
@@ -91,7 +91,7 @@ resource "aws_nat_gateway" "hashi_nat_gateway" {
   subnet_id     = aws_subnet.hashi_public_subnet.id
 
   tags = {
-    Name = "dev-nat"
+    Name = "dev-nat" # Customize the NAT gateway name/tag
   }
 }
 
@@ -105,7 +105,7 @@ resource "aws_route_table" "hashi_private_rt" {
   }
 
   tags = {
-    Name = "dev_private_rt"
+    Name = "dev_private_rt" # Customize the route table name/tag
   }
 }
 
@@ -120,7 +120,7 @@ resource "aws_security_group" "hashi_web_sg" {
   name        = "web-sg"
   description = "Security group for web server"
   vpc_id      = aws_vpc.hashi_vpc.id
-  
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -160,28 +160,28 @@ resource "aws_security_group" "hashi_alb_sg" {
 
 # Permitting the ALB to forward traffic to the web server on port 80
 resource "aws_security_group_rule" "allow_alb" {
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  security_group_id = aws_security_group.hashi_web_sg.id
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.hashi_web_sg.id
   source_security_group_id = aws_security_group.hashi_alb_sg.id
 }
 
 # Permitting the ALB to forward traffic to the web server on port 443
 resource "aws_security_group_rule" "allow_alb_https" {
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.hashi_web_sg.id
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.hashi_web_sg.id
   source_security_group_id = aws_security_group.hashi_alb_sg.id
 }
 
 # Creating an AWS Key Pair for authentication
 resource "aws_key_pair" "hashi_auth" {
   key_name   = "hashikey"
-  public_key = file("~/.ssh/hashikey.pub")
+  public_key = file("~/.ssh/hashikey.pub") # Provide the path to your public key file
 }
 
 # Creating an IAM role for EC2 instances to use Amazon SSM
@@ -216,43 +216,91 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
 
 # Creating an EC2 instance for the web server
 resource "aws_instance" "dev_node" {
-  instance_type          = var.instance_type
-  ami                    = data.aws_ami.server_ami.id
-  key_name               = var.key_name
+  instance_type          = var.instance_type          # Change to your desired instance type
+  ami                    = data.aws_ami.server_ami.id # Use the appropriate AMI ID
+  key_name               = var.key_name               # Change to your SSH key name
   vpc_security_group_ids = [aws_security_group.hashi_web_sg.id]
   subnet_id              = aws_subnet.hashi_private_subnet.id
   iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
 
   user_data = <<-EOF
     <powershell>
-    Install-WindowsFeature -name Web-Server -IncludeManagementTools
+    # Logging Function
+    function Write-Log {
+        param (
+            [string]$Message,
+            [string]$LogFilePath = "C:\terraform_web_setup.log"
+        )
+        
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $fullMessage = "$timestamp : $Message"
+        
+        Add-Content -Path $LogFilePath -Value $fullMessage
+    }
 
-    # Create a basic HTML page for the example
+    Write-Log "Starting the installation of Web-Server feature."
+    Install-WindowsFeature -name Web-Server -IncludeManagementTools
+    Write-Log "Web-Server feature installation completed."
+
+    # Professional-looking HTML content
     $htmlContent = @"
-    <html>
+    <!DOCTYPE html>
+    <html lang="en">
     <head>
-        <title>Sample Web App</title>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Professional Web App</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-image: linear-gradient(to right, #2b5876, #4e4376);
+                color: white;
+            }
+            h1 {
+                font-size: 2.5em;
+            }
+            p {
+                font-size: 1.2em;
+            }
+            .container {
+                text-align: center;
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 10px;
+            }
+        </style>
     </head>
     <body>
-        <h1>Welcome to the Sample Web App on IIS</h1>
-        <p>This is a sample page deployed via Terraform.</p>
+        <div class="container">
+            <h1>Welcome to the Professional Web App on IIS</h1>
+            <p>Deployed with excellence via Terraform.</p>
+        </div>
     </body>
     </html>
     "@
 
+    Write-Log "Generating the HTML content for the web app."
+    
     # Write the content to the default IIS folder
     $htmlContent | Out-File -Encoding ASCII C:\inetpub\wwwroot\index.html
+    Write-Log "HTML content written to C:\inetpub\wwwroot\index.html successfully."
 
-    # Optionally, if you have a .NET app package, you would deploy it here.
     </powershell>
-  EOF
+EOF
 
   tags = {
-    Name = "dev-node"
+    Name = "dev-node" # Customize the instance name/tag
   }
 
   root_block_device {
-    # volume_size = 8
+    # volume_size = 8  # You can specify the root volume size if needed
   }
 }
 
@@ -264,7 +312,7 @@ resource "aws_lb" "web_alb" {
   security_groups    = [aws_security_group.hashi_alb_sg.id]
   subnets            = [aws_subnet.hashi_public_subnet.id, aws_subnet.hashi_public_subnet_2.id]
 
-  enable_deletion_protection      = false
+  enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
 }
 
@@ -307,14 +355,14 @@ resource "aws_lb_listener" "web_listener" {
 # Creating a bastion host for SSH access
 resource "aws_instance" "bastion" {
   ami           = data.aws_ami.server_ami.id # Change to a suitable Linux/Windows AMI ID
-  instance_type = "t2.micro"
+  instance_type = "t2.micro"                 # Change to your desired instance type
   subnet_id     = aws_subnet.hashi_public_subnet.id
   key_name      = aws_key_pair.hashi_auth.key_name
 
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 
   tags = {
-    Name = "BastionHost"
+    Name = "BastionHost" # Customize the bastion host name/tag
   }
 }
 
@@ -327,7 +375,7 @@ resource "aws_security_group" "bastion_sg" {
     from_port   = 22 # Use 3389 for Windows instances using RDP
     to_port     = 22 # Use 3389 for Windows instances using RDP
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] # Restrict SSH access to a specific IP range for security
   }
 
   egress {
@@ -335,5 +383,9 @@ resource "aws_security_group" "bastion_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "BastionSG"
   }
 }

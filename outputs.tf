@@ -10,12 +10,12 @@ output "private_subnet_id" {
   value       = aws_subnet.hashi_private_subnet.id
 }
 
-output "public_subnet_id_1" {  # Renamed for clarity
+output "public_subnet_id_1" { # Renamed for clarity
   description = "The ID of the first created public subnet."
   value       = aws_subnet.hashi_public_subnet.id
 }
 
-output "public_subnet_id_2" {  # New output for the second public subnet
+output "public_subnet_id_2" { # New output for the second public subnet
   description = "The ID of the second created public subnet."
   value       = aws_subnet.hashi_public_subnet_2.id
 }
