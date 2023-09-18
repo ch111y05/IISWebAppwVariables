@@ -178,6 +178,7 @@ resource "aws_security_group_rule" "allow_alb_https" {
   source_security_group_id = aws_security_group.hashi_alb_sg.id
 }
 
+
 # Creating an AWS Key Pair for authentication
 resource "aws_key_pair" "hashi_auth" {
   key_name   = "hashikey"
